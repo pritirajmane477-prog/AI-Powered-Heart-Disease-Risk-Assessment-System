@@ -366,7 +366,10 @@ final prediction is made from clinical parameters.
         """, unsafe_allow_html=True)
 
     st.write("")
-    st.success("Click **Lifestyle Assessment** from the sidebar to begin.")
+
+    if st.button("🚀 Start Assessment"):
+        goto("Lifestyle Assessment")
+
     st.warning("This application is for educational purposes only and should not replace professional medical advice.")
     st.caption("Developed using Python • Streamlit • Scikit-learn")
 
@@ -386,15 +389,15 @@ elif page == "Lifestyle Assessment":
 
     with col1:
         age = st.number_input("🎂 Age", min_value=20, max_value=100, value=40)
-        gender = st.selectbox("🚻 Gender", ["Male", "Female"])
-        smoke = st.selectbox("🚬 Do you smoke?", ["No", "Yes"])
-        alcohol = st.selectbox("🍺 Do you consume alcohol?", ["No", "Yes"])
+        gender = st.number_input("🚻 Gender (0 = Female, 1 = Male)", min_value=0, max_value=1, value=1, step=1)
+        smoke = st.number_input("🚬 Smoking (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
+        alcohol = st.number_input("🍺 Alcohol Consumption (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
 
     with col2:
-        exercise = st.selectbox("🏃 Do you exercise regularly?", ["Yes", "No"])
-        diabetes = st.selectbox("🍬 Do you have diabetes?", ["No", "Yes"])
-        bp = st.selectbox("🩸 Do you have high blood pressure?", ["No", "Yes"])
-        family = st.selectbox("👨‍👩‍👧 Family history of heart disease?", ["No", "Yes"])
+        exercise = st.number_input("🏃 Physical Activity (0 = No, 1 = Yes)", min_value=0, max_value=1, value=1, step=1)
+        diabetes = st.number_input("🍬 Diabetes (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
+        bp = st.number_input("🩸 High Blood Pressure History (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
+        family = st.number_input("👨‍👩‍👧 Family History (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
 
     st.divider()
 
@@ -422,10 +425,10 @@ elif page == "Clinical Prediction":
     st.title("🩺 Clinical Report Prediction")
 
     age = st.session_state.get("age", 45)
-    gender = st.session_state.get("gender", "Male")
+    gender = st.session_state.get("gender", 1)
 
     st.markdown(
-        f'<div class="patient-banner">👤 Patient: {gender} &nbsp;|&nbsp; 🎂 Age: {age} years</div>',
+        f'<div class="patient-banner">👤 Patient Gender: {gender} &nbsp;|&nbsp; 🎂 Age: {age} years</div>',
         unsafe_allow_html=True
     )
 
@@ -439,57 +442,33 @@ elif page == "Clinical Prediction":
     # ---------------- LEFT COLUMN ----------------
 
     with col1:
-        cp = st.selectbox(
-         "Chest Pain Type",
-           [0, 1, 2, 3]
-         )
-
+        cp = st.number_input("Chest Pain Type (0-3)", min_value=0, max_value=3, value=0, step=1)
         trestbps = st.number_input("Resting Blood Pressure (mm Hg)", 80, 250, 120)
-
         chol = st.number_input("Cholesterol (mg/dl)", 100, 600, 200)
-
-        fbs = st.selectbox(
-         "Fasting Blood Sugar >120 mg/dl", ["No","Yes"] )
-
-        restecg = st.selectbox(
-         "Resting ECG",
-         [0, 1, 2]
-        )
-
+        fbs = st.number_input("Fasting Blood Sugar > 120 mg/dl (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
+        restecg = st.number_input("Resting ECG (0-2)", min_value=0, max_value=2, value=0, step=1)
         thalach = st.number_input("Maximum Heart Rate", 60, 220, 150)
 
-
-        
     # ---------------- RIGHT COLUMN ----------------
 
     with col2:
-        exang = st.selectbox( "Exercise Induced Angina",  ["No","Yes"]  )
+        exang = st.number_input("Exercise Induced Angina (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0, step=1)
         oldpeak = st.number_input("ST Depression", 0.0, 10.0, 1.0)
-        slope = st.selectbox( "ST Segment Slope", [0, 1, 2] )
-        ca = st.selectbox( "Major Vessels", [0, 1, 2, 3])
-        thal = st.selectbox("Thalassemia", [0, 1, 2, 3])
+        slope = st.number_input("ST Segment Slope (0-2)", min_value=0, max_value=2, value=0, step=1)
+        ca = st.number_input("Major Vessels (0-3)", min_value=0, max_value=3, value=0, step=1)
+        thal = st.number_input("Thalassemia (0-3)", min_value=0, max_value=3, value=0, step=1)
 
-
-
-
-        
     st.divider()
 
     predict = st.button("🔍 Predict Risk", use_container_width=True)
 
     if predict:
 
-        sex = 1 if gender == "Male" else 0
-        cp_val = cp
-        fbs_val = 1 if fbs=="Yes" else 0
-        restecg_val = restecg
-        exang_val = 1 if exang=="Yes" else 0
-        slope_val = slope
-        thal_val = thal
+        sex = gender
 
         input_data = np.array([[
-            age, sex, cp_val, trestbps, chol, fbs_val, restecg_val,
-            thalach, exang_val, oldpeak, slope_val, ca, thal_val
+            age, sex, cp, trestbps, chol, fbs, restecg,
+            thalach, exang, oldpeak, slope, ca, thal
         ]])
 
         input_data = scaler.transform(input_data)
@@ -530,13 +509,13 @@ elif page == "Clinical Prediction":
             recs.append("🩸 Monitor your blood pressure regularly.")
         if chol > 200:
             recs.append("🥗 Reduce foods high in cholesterol and saturated fats.")
-        if fbs_val == 1:
+        if fbs == 1:
             recs.append("🍬 Keep your blood sugar under control.")
-        if exang_val == 1:
+        if exang == 1:
             recs.append("🏃 Avoid strenuous exercise without medical advice.")
         if oldpeak > 2:
             recs.append("❤️ Visit a cardiologist for further evaluation.")
-        if cp_val in [2, 3]:
+        if cp in [2, 3]:
             recs.append("⚠️ Do not ignore chest pain symptoms.")
 
         recs += [
