@@ -274,9 +274,9 @@ page = st.session_state.page
 
 st.sidebar.markdown("---")
 st.sidebar.success("Heart Disease Risk Assessment")
-st.sidebar.write("**Algorithm**")
+st.sidebar.write("**Algorithm:**")
 st.sidebar.write("Random Forest")
-st.sidebar.write("**Developer**")
+st.sidebar.write("**Developer:**")
 st.sidebar.write("Priti Rajmane")
 
 
