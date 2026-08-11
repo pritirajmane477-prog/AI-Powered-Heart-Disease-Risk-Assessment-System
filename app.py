@@ -362,7 +362,7 @@ final prediction is made from clinical parameters.
         <div class="feature-card">
             <div class="feature-icon">📊</div>
             <div class="feature-title">Risk Probability</div>
-            <div class="feature-text">The model predicts the probability of heart disease instead of a direct diagnosis.</div>
+            <div class="feature-text">The model predicts heart disease based on assessment.</div>
         </div>
         """, unsafe_allow_html=True)
 
