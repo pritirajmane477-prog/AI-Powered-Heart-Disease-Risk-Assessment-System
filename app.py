@@ -1,6 +1,7 @@
 import streamlit as st
 import pickle
 import numpy as np
+import pandas as pd
 
 # =====================================================
 # PAGE CONFIG
@@ -313,7 +314,7 @@ if page == "Home":
 
     st.markdown("""
     <div class="hero">
-        <h1>🩺 Heart Disease Risk Assessment System</h1>
+        <h1>🩺 Heart Disease Risk Assessment System (Adult CAD Screening)</h1>
         <p>AI-Based Clinical Decision Support</p>
     </div>
     """, unsafe_allow_html=True)
@@ -388,7 +389,7 @@ elif page == "Lifestyle Assessment":
     col1, col2 = st.columns(2)
 
     with col1:
-        age = st.number_input("🎂 Age", min_value=20, max_value=100, value=40)
+        age = st.number_input("🎂 Age", min_value=25, max_value=80, value=40)
         gender = st.selectbox("🚻 Gender", ["Male", "Female"])
         smoke = st.selectbox("🚬 Do you smoke?", ["No", "Yes"])
         alcohol = st.selectbox("🍺 Do you consume alcohol?", ["No", "Yes"])
@@ -469,8 +470,8 @@ elif page == "Clinical Prediction":
         exang = st.selectbox( "Exercise Induced Angina",  ["No","Yes"]  )
         oldpeak = st.number_input("ST Depression", 0.0, 10.0, 1.0)
         slope = st.selectbox( "ST Segment Slope", [0, 1, 2] )
-        ca = st.selectbox( "Major Vessels", [0, 1, 2, 3])
-        thal = st.selectbox("Thalassemia", [0, 1, 2, 3])
+        ca = st.selectbox( "Major Vessels", [0, 1, 2, 3, 4])
+        thal = st.selectbox("Thalassemia", [1, 2, 3])
 
 
 
@@ -490,36 +491,36 @@ elif page == "Clinical Prediction":
         slope_val = slope
         thal_val = thal
 
-        input_data = np.array([[
+        input_data = pd.DataFrame([[
             age, sex, cp_val, trestbps, chol, fbs_val, restecg_val,
             thalach, exang_val, oldpeak, slope_val, ca, thal_val
-        ]])
+        ]], columns=["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
+                      "thalach", "exang", "oldpeak", "slope", "ca", "thal"])
 
         input_data = scaler.transform(input_data)
 
         probability = model.predict_proba(input_data)
-        risk = probability[0][1]
+        # Note: in this dataset, target=1 actually means "no disease" and
+        # target=0 means "disease present" (confirmed against the data's own
+        # clinical averages) -- so P(disease) is probability[0][0], not [1].
+        risk = probability[0][0]
 
         st.divider()
         st.subheader("📊 Prediction Result")
 
-        if risk < 0.40:
-            css_class, label, sub = "result-low", "🟢 Low Risk", "The model predicts a low probability of heart disease."
-        elif risk < 0.70:
-            css_class, label, sub = "result-mid", "🟡 Moderate Risk", "The model predicts a moderate probability of heart disease."
+        if risk < 0.50:
+            css_class, label, sub = "result-low", "🟢 Heart Disease Not Detected", "Please continue regular health checkups."
         else:
-            css_class, label, sub = "result-high", "🔴 High Risk", "The model predicts a high probability of heart disease."
-
+            css_class, label, sub = "result-high", "🔴 Heart Disease Detected", "Please consult a cardiologist for further evaluation."
+        
         st.markdown(f"""
         <div class="result-card {css_class}">
-            <div class="result-pct">{risk*100:.1f}%</div>
             <div class="result-label">{label}</div>
             <div class="result-sub">{sub}</div>
         </div>
         """, unsafe_allow_html=True)
 
         st.write("")
-        st.progress(risk)
 
         st.info("This is an AI-based prediction and should not replace professional medical advice.")
 
