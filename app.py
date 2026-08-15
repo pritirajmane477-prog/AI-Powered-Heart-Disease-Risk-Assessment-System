@@ -274,9 +274,9 @@ page = st.session_state.page
 
 st.sidebar.markdown("---")
 st.sidebar.success("Heart Disease Risk Assessment")
-st.sidebar.write("**Algorithm**")
+st.sidebar.write("**Algorithm:**")
 st.sidebar.write("Random Forest")
-st.sidebar.write("**Developer**")
+st.sidebar.write("**Developer:**")
 st.sidebar.write("Priti Rajmane")
 
 
@@ -362,7 +362,7 @@ final prediction is made from clinical parameters.
         <div class="feature-card">
             <div class="feature-icon">📊</div>
             <div class="feature-title">Risk Probability</div>
-            <div class="feature-text">The model predicts the probability of heart disease instead of a direct diagnosis.</div>
+            <div class="feature-text">The model tells you whether heart disease is detected or not detected.</div>
         </div>
         """, unsafe_allow_html=True)
 
