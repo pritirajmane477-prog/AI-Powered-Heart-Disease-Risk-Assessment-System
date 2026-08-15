@@ -274,9 +274,9 @@ page = st.session_state.page
 
 st.sidebar.markdown("---")
 st.sidebar.success("Heart Disease Risk Assessment")
-st.sidebar.write("**Algorithm:**")
+st.sidebar.write("**Algorithm**")
 st.sidebar.write("Random Forest")
-st.sidebar.write("**Developer:**")
+st.sidebar.write("**Developer**")
 st.sidebar.write("Priti Rajmane")
 
 
@@ -362,7 +362,7 @@ final prediction is made from clinical parameters.
         <div class="feature-card">
             <div class="feature-icon">📊</div>
             <div class="feature-title">Risk Probability</div>
-            <div class="feature-text">The model predicts heart disease based on assessment.</div>
+            <div class="feature-text">The model predicts the probability of heart disease instead of a direct diagnosis.</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -413,6 +413,7 @@ elif page == "Lifestyle Assessment":
         st.session_state["diabetes"] = diabetes
         st.session_state["bp_history"] = bp
         st.session_state["family_history"] = family
+        st.session_state["lifestyle_done"] = True
 
         goto("Clinical Prediction")
 
@@ -424,6 +425,10 @@ elif page == "Clinical Prediction":
 
     stepper(2)
     st.title("🩺 Clinical Report Prediction")
+
+    if "lifestyle_done" not in st.session_state:
+        st.warning("Please complete the Lifestyle Assessment first.")
+        st.stop()
 
     age = st.session_state.get("age", 40)
     gender = st.session_state.get("gender", "Male")
@@ -445,7 +450,7 @@ elif page == "Clinical Prediction":
     with col1:
         cp = st.selectbox(
          "Chest Pain Type",
-           [0, 1, 2, 3]
+           ["Typical Angina", "Atypical Angina", "Non-anginal Pain", "Asymptomatic"]
          )
 
         trestbps = st.number_input("Resting Blood Pressure (mm Hg)", 80, 250, 120)
@@ -457,7 +462,7 @@ elif page == "Clinical Prediction":
 
         restecg = st.selectbox(
          "Resting ECG",
-         [0, 1, 2]
+         ["Normal", "ST-T Wave Abnormality", "Left Ventricular Hypertrophy"]
         )
 
         thalach = st.number_input("Maximum Heart Rate", 60, 220, 150)
@@ -469,9 +474,9 @@ elif page == "Clinical Prediction":
     with col2:
         exang = st.selectbox( "Exercise Induced Angina",  ["No","Yes"]  )
         oldpeak = st.number_input("ST Depression", 0.0, 10.0, 1.0)
-        slope = st.selectbox( "ST Segment Slope", [0, 1, 2] )
+        slope = st.selectbox( "ST Segment Slope", ["Upsloping", "Flat", "Downsloping"] )
         ca = st.selectbox( "Major Vessels", [0, 1, 2, 3, 4])
-        thal = st.selectbox("Thalassemia", [1, 2, 3])
+        thal = st.selectbox("Thalassemia", ["Normal", "Fixed Defect", "Reversible Defect"])
 
 
 
@@ -484,12 +489,12 @@ elif page == "Clinical Prediction":
     if predict:
 
         sex = 1 if gender == "Male" else 0
-        cp_val = cp
+        cp_val = {"Typical Angina": 0, "Atypical Angina": 1, "Non-anginal Pain": 2, "Asymptomatic": 3}[cp]
         fbs_val = 1 if fbs=="Yes" else 0
-        restecg_val = restecg
+        restecg_val = {"Normal": 0, "ST-T Wave Abnormality": 1, "Left Ventricular Hypertrophy": 2}[restecg]
         exang_val = 1 if exang=="Yes" else 0
-        slope_val = slope
-        thal_val = thal
+        slope_val = {"Upsloping": 0, "Flat": 1, "Downsloping": 2}[slope]
+        thal_val = {"Normal": 1, "Fixed Defect": 2, "Reversible Defect": 3}[thal]
 
         input_data = pd.DataFrame([[
             age, sex, cp_val, trestbps, chol, fbs_val, restecg_val,
@@ -500,19 +505,16 @@ elif page == "Clinical Prediction":
         input_data = scaler.transform(input_data)
 
         probability = model.predict_proba(input_data)
-        # Note: in this dataset, target=1 actually means "no disease" and
-        # target=0 means "disease present" (confirmed against the data's own
-        # clinical averages) -- so P(disease) is probability[0][0], not [1].
         risk = probability[0][0]
 
         st.divider()
         st.subheader("📊 Prediction Result")
 
         if risk < 0.50:
-            css_class, label, sub = "result-low", "🟢 Heart Disease Not Detected", "Please continue regular health checkups."
+            css_class, label, sub = "result-low", "🟢 There Is No Risk of Heart Disease", "Please continue regular health checkups."
         else:
-            css_class, label, sub = "result-high", "🔴 Heart Disease Detected", "Please consult a cardiologist for further evaluation."
-        
+            css_class, label, sub = "result-high", "🔴 There Is a Risk of Heart Disease", "Please consult a cardiologist for further evaluation."
+
         st.markdown(f"""
         <div class="result-card {css_class}">
             <div class="result-label">{label}</div>
