@@ -425,7 +425,7 @@ elif page == "Clinical Prediction":
     stepper(2)
     st.title("🩺 Clinical Report Prediction")
 
-    age = st.session_state.get("age", 45)
+    age = st.session_state.get("age", 40)
     gender = st.session_state.get("gender", "Male")
 
     st.markdown(
