@@ -575,7 +575,7 @@ elif page == "About":
 
     st.markdown("""
 This application is an **Artificial Intelligence (AI) powered Clinical Decision
-Support System (CDSS)** developed to estimate the **probability of heart disease**
+Support System (CDSS)** developed to detect the **presence of heart disease**
 using Machine Learning techniques.
 
 The system analyzes important clinical parameters and provides an **early risk
@@ -587,7 +587,7 @@ medical consultation.
 
 - Provide an easy-to-use and user-friendly interface
 - Estimate heart disease risk using Machine Learning
-- Present prediction results as a probability rather than a direct diagnosis
+- Present a clear result rather than a direct medical diagnosis
 - Promote preventive healthcare and early awareness
 - Demonstrate the practical application of AI in the healthcare sector
 
@@ -609,7 +609,7 @@ Sugar, Resting ECG, Maximum Heart Rate, Exercise-Induced Angina, ST Depression
 - Interactive and user-friendly interface
 - Lifestyle Assessment module
 - AI-based risk prediction
-- Probability-based result visualization
+- Clear , easy-to-understand result display
 - Personalized health recommendations
 - Clinical decision support
 
