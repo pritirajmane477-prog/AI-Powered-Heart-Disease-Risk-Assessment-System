@@ -33,6 +33,8 @@ html, body, [class*="css"] {
     font-family: 'Poppins', sans-serif;
 }
 
+#. means you're selecting a CSS class.
+
 .main {
     background: radial-gradient(circle at top left, #eef6fb 0%, #e7f0f7 40%, #eef3f8 100%);
 }
@@ -222,14 +224,12 @@ section[data-testid="stSidebar"] .stRadio [role="radiogroup"] label:hover {
 
 /* Recommendation chip */
 .rec-item {
-    background: white;
-    border: 1px solid #eef2f6;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    background: #F0F9FB;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
     font-size: 14.5px;
-    color: #37454f;
-    box-shadow: 0 2px 8px rgba(15,45,70,0.04);
+    color: #0B2545;
 }
 
 hr {
@@ -304,6 +304,17 @@ def stepper(active_step: int):
         <div class="{step2_class}"><span class="step-num">2</span> Clinical Report</div>
     </div>
     """, unsafe_allow_html=True)
+
+
+def persist_number(label, key, backup_key, min_value, max_value, default):
+    """Number input with a stable widget key (fixes +/- stepper glitches)
+    that re-seeds itself from a plain backup key if it was cleared by
+    navigating away from this page, and keeps that backup in sync."""
+    if key not in st.session_state:
+        st.session_state[key] = st.session_state.get(backup_key, default)
+    value = st.number_input(label, min_value, max_value, key=key)
+    st.session_state[backup_key] = value
+    return value
 
 
 # =====================================================
@@ -389,32 +400,48 @@ elif page == "Lifestyle Assessment":
     col1, col2 = st.columns(2)
 
     with col1:
-        age = st.number_input("🎂 Age", min_value=25, max_value=80, value=40)
-        gender = st.selectbox("🚻 Gender", ["Male", "Female"])
-        smoke = st.selectbox("🚬 Do you smoke?", ["No", "Yes"])
-        alcohol = st.selectbox("🍺 Do you consume alcohol?", ["No", "Yes"])
+        age = persist_number("🎂 Age", "age_widget", "age", 25, 80, 40)
+
+        gender_opts = ["Male", "Female"]
+        gender = st.selectbox("🚻 Gender", gender_opts,
+                               index=gender_opts.index(st.session_state.get("gender", "Male")))
+        st.session_state["gender"] = gender
+
+        smoke_opts = ["No", "Yes"]
+        smoke = st.selectbox("🚬 Do you smoke?", smoke_opts,
+                              index=smoke_opts.index(st.session_state.get("smoke", "No")))
+        st.session_state["smoke"] = smoke
+
+        alcohol_opts = ["No", "Yes"]
+        alcohol = st.selectbox("🍺 Do you consume alcohol?", alcohol_opts,
+                                index=alcohol_opts.index(st.session_state.get("alcohol", "No")))
+        st.session_state["alcohol"] = alcohol
 
     with col2:
-        exercise = st.selectbox("🏃 Do you exercise regularly?", ["Yes", "No"])
-        diabetes = st.selectbox("🍬 Do you have diabetes?", ["No", "Yes"])
-        bp = st.selectbox("🩸 Do you have high blood pressure?", ["No", "Yes"])
-        family = st.selectbox("👨‍👩‍👧 Family history of heart disease?", ["No", "Yes"])
+        exercise_opts = ["Yes", "No"]
+        exercise = st.selectbox("🏃 Do you exercise regularly?", exercise_opts,
+                                 index=exercise_opts.index(st.session_state.get("exercise", "Yes")))
+        st.session_state["exercise"] = exercise
+
+        diabetes_opts = ["No", "Yes"]
+        diabetes = st.selectbox("🍬 Do you have diabetes?", diabetes_opts,
+                                 index=diabetes_opts.index(st.session_state.get("diabetes", "No")))
+        st.session_state["diabetes"] = diabetes
+
+        bp_opts = ["No", "Yes"]
+        bp = st.selectbox("🩸 Do you have high blood pressure?", bp_opts,
+                           index=bp_opts.index(st.session_state.get("bp_history", "No")))
+        st.session_state["bp_history"] = bp
+
+        family_opts = ["No", "Yes"]
+        family = st.selectbox("👨‍👩‍👧 Family history of heart disease?", family_opts,
+                               index=family_opts.index(st.session_state.get("family_history", "No")))
+        st.session_state["family_history"] = family
 
     st.divider()
 
     if st.button("Continue to Clinical Prediction ➜"):
-
-        # Persist lifestyle inputs for later pages / recommendations
-        st.session_state["age"] = age
-        st.session_state["gender"] = gender
-        st.session_state["smoke"] = smoke
-        st.session_state["alcohol"] = alcohol
-        st.session_state["exercise"] = exercise
-        st.session_state["diabetes"] = diabetes
-        st.session_state["bp_history"] = bp
-        st.session_state["family_history"] = family
         st.session_state["lifestyle_done"] = True
-
         goto("Clinical Prediction")
 
 # =====================================================
@@ -448,40 +475,52 @@ elif page == "Clinical Prediction":
     # ---------------- LEFT COLUMN ----------------
 
     with col1:
-        cp = st.selectbox(
-         "Chest Pain Type",
-           ["Typical Angina", "Atypical Angina", "Non-anginal Pain", "Asymptomatic"]
-         )
+        cp_opts = ["Typical Angina", "Atypical Angina", "Non-anginal Pain", "Asymptomatic"]
+        cp = st.selectbox("Chest Pain Type", cp_opts,
+                           index=cp_opts.index(st.session_state.get("cp_saved", cp_opts[0])))
+        st.session_state["cp_saved"] = cp
 
-        trestbps = st.number_input("Resting Blood Pressure (mm Hg)", 80, 250, 120)
+        trestbps = persist_number("Resting Blood Pressure (mm Hg)", "trestbps_widget", "trestbps_saved", 80, 250, 120)
 
-        chol = st.number_input("Cholesterol (mg/dl)", 100, 600, 200)
+        chol = persist_number("Cholesterol (mg/dl)", "chol_widget", "chol_saved", 100, 600, 200)
 
-        fbs = st.selectbox(
-         "Fasting Blood Sugar >120 mg/dl", ["No","Yes"] )
+        fbs_opts = ["No", "Yes"]
+        fbs = st.selectbox("Fasting Blood Sugar >120 mg/dl", fbs_opts,
+                            index=fbs_opts.index(st.session_state.get("fbs_saved", "No")))
+        st.session_state["fbs_saved"] = fbs
 
-        restecg = st.selectbox(
-         "Resting ECG",
-         ["Normal", "ST-T Wave Abnormality", "Left Ventricular Hypertrophy"]
-        )
+        restecg_opts = ["Normal", "ST-T Wave Abnormality", "Left Ventricular Hypertrophy"]
+        restecg = st.selectbox("Resting ECG", restecg_opts,
+                                index=restecg_opts.index(st.session_state.get("restecg_saved", restecg_opts[0])))
+        st.session_state["restecg_saved"] = restecg
 
-        thalach = st.number_input("Maximum Heart Rate", 60, 220, 150)
+        thalach = persist_number("Maximum Heart Rate", "thalach_widget", "thalach_saved", 60, 220, 150)
 
-
-        
     # ---------------- RIGHT COLUMN ----------------
 
     with col2:
-        exang = st.selectbox( "Exercise Induced Angina",  ["No","Yes"]  )
-        oldpeak = st.number_input("ST Depression", 0.0, 10.0, 1.0)
-        slope = st.selectbox( "ST Segment Slope", ["Upsloping", "Flat", "Downsloping"] )
-        ca = st.selectbox( "Major Vessels", [0, 1, 2, 3, 4])
-        thal = st.selectbox("Thalassemia", ["Normal", "Fixed Defect", "Reversible Defect"])
+        exang_opts = ["No", "Yes"]
+        exang = st.selectbox("Exercise Induced Angina", exang_opts,
+                              index=exang_opts.index(st.session_state.get("exang_saved", "No")))
+        st.session_state["exang_saved"] = exang
 
+        oldpeak = persist_number("ST Depression", "oldpeak_widget", "oldpeak_saved", 0.0, 10.0, 1.0)
 
+        slope_opts = ["Upsloping", "Flat", "Downsloping"]
+        slope = st.selectbox("ST Segment Slope", slope_opts,
+                              index=slope_opts.index(st.session_state.get("slope_saved", slope_opts[0])))
+        st.session_state["slope_saved"] = slope
 
+        ca_opts = [0, 1, 2, 3, 4]
+        ca = st.selectbox("Major Vessels", ca_opts,
+                           index=ca_opts.index(st.session_state.get("ca_saved", 0)))
+        st.session_state["ca_saved"] = ca
 
-        
+        thal_opts = ["Normal", "Fixed Defect", "Reversible Defect"]
+        thal = st.selectbox("Thalassemia", thal_opts,
+                             index=thal_opts.index(st.session_state.get("thal_saved", thal_opts[0])))
+        st.session_state["thal_saved"] = thal
+
     st.divider()
 
     predict = st.button("🔍 Predict Risk", use_container_width=True)
@@ -507,56 +546,69 @@ elif page == "Clinical Prediction":
         probability = model.predict_proba(input_data)
         risk = probability[0][0]
 
+        if risk < 0.50:
+            css_class, label, sub = "result-low", "🟢 Lower Estimated Risk", "Please continue regular health checkups."
+        else:
+            css_class, label, sub = "result-high", "🔴 Higher Estimated Risk", "Please consult a healthcare professional for further evaluation."
+
+        recs = []
+        if age >= 60:
+            recs.append("📅 Consider regular cardiovascular health check-ups to monitor heart health and identify potential concerns early.")
+        if trestbps > 130:
+            recs.append("🩸 Maintain healthy BP through a balanced diet, regular physical activity, stress management and routine monitoring.")
+        if chol > 200:
+            recs.append("🥗 Choose more fibre-rich foods such as fruits, vegetables, whole grains while limiting foods rich in saturated and trans fats.")
+        if fbs_val == 1:
+            recs.append("🍬 Maintain consistent blood-sugar management through balanced meals, regular activity and appropriate medical follow-up.")
+        if exang_val == 1:
+            recs.append("🏃 Discuss exercise intensity with a healthcare professional and stop activity if you experience concerning symptoms such as chest discomfort.")
+        if oldpeak > 2:
+            recs.append("❤️ Consider reviewing the exercise ECG findings with a healthcare professional for further cardiac assessment.")
+        if cp_val in [0, 1]:
+            recs.append("⚠️ Avoid ignoring recurring chest discomfort, especially when it occurs during physical activity.")
+
+        recs += [
+            "🥦 Prefer a heart-healthy diet rich in vegetables, fruits, whole grains and unsaturated fats.",
+            "🚶 Build regular moderate physical activity into your routine and increase intensity gradually.",
+            "😴 Maintain a consistent sleep schedule and aim for adequate, good-quality sleep.",
+            "🚭 Avoid smoking and tobacco, as eliminating smoking is one of the most important modifiable risk factors.",
+            "💧 Maintain adequate hydration throughout the day, especially during hot weather and physical activity.",
+        ]
+
+        # Freeze this exact result in session_state -- editing inputs afterward
+        # will NOT change what's displayed until Predict Risk is clicked again.
+        st.session_state["result"] = {
+            "css_class": css_class, "label": label, "sub": sub, "recs": recs
+        }
+
+    if "result" in st.session_state:
+
+        result = st.session_state["result"]
+
         st.divider()
         st.subheader("📊 Prediction Result")
 
-        if risk < 0.50:
-            css_class, label, sub = "result-low", "🟢 There Is No Risk of Heart Disease", "Please continue regular health checkups."
-        else:
-            css_class, label, sub = "result-high", "🔴 There Is a Risk of Heart Disease", "Please consult a cardiologist for further evaluation."
-
         st.markdown(f"""
-        <div class="result-card {css_class}">
-            <div class="result-label">{label}</div>
-            <div class="result-sub">{sub}</div>
+        <div class="result-card {result['css_class']}">
+            <div class="result-label">{result['label']}</div>
+            <div class="result-sub">{result['sub']}</div>
         </div>
         """, unsafe_allow_html=True)
 
         st.write("")
-
         st.info("This is an AI-based prediction and should not replace professional medical advice.")
 
         st.divider()
         st.subheader("💡 Personalized Health Recommendations")
 
-        recs = []
-        if age >= 60:
-            recs.append("📅 Schedule regular heart check-ups.")
-        if trestbps > 130:
-            recs.append("🩸 Monitor your blood pressure regularly.")
-        if chol > 200:
-            recs.append("🥗 Reduce foods high in cholesterol and saturated fats.")
-        if fbs_val == 1:
-            recs.append("🍬 Keep your blood sugar under control.")
-        if exang_val == 1:
-            recs.append("🏃 Avoid strenuous exercise without medical advice.")
-        if oldpeak > 2:
-            recs.append("❤️ Visit a cardiologist for further evaluation.")
-        if cp_val in [2, 3]:
-            recs.append("⚠️ Do not ignore chest pain symptoms.")
-
-        recs += [
-            "🥦 Eat more fruits and vegetables.",
-            "🚶 Exercise regularly.",
-            "😴 Sleep 7–8 hours every day.",
-            "🚭 Avoid smoking and tobacco.",
-            "💧 Drink enough water.",
-        ]
-
         rec_col1, rec_col2 = st.columns(2)
-        for i, rec in enumerate(recs):
+        for i, rec in enumerate(result["recs"]):
             target = rec_col1 if i % 2 == 0 else rec_col2
             target.markdown(f'<div class="rec-item">{rec}</div>', unsafe_allow_html=True)
+
+        st.divider()
+        if st.button("ℹ️ Go to About"):
+            goto("About")
 
 # =====================================================
 # ABOUT PAGE
