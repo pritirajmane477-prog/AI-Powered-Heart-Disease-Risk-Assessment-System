@@ -34,7 +34,6 @@ html, body, [class*="css"] {
 }
 
 #. means you're selecting a CSS class.
-
 .main {
     background: radial-gradient(circle at top left, #eef6fb 0%, #e7f0f7 40%, #eef3f8 100%);
 }
@@ -204,13 +203,7 @@ section[data-testid="stSidebar"] .stRadio [role="radiogroup"] label:hover {
     box-shadow: 0 10px 26px rgba(15,45,70,0.18);
 }
 .result-low { background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%); }
-.result-mid { background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); }
 .result-high { background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%); }
-.result-pct {
-    font-size: 46px;
-    font-weight: 800;
-    margin: 6px 0 2px 0;
-}
 .result-label {
     font-size: 19px;
     font-weight: 700;
@@ -312,7 +305,7 @@ def persist_number(label, key, backup_key, min_value, max_value, default):
     navigating away from this page, and keeps that backup in sync."""
     if key not in st.session_state:
         st.session_state[key] = st.session_state.get(backup_key, default)
-    value = st.number_input(label, min_value, max_value, key=key)
+    value = st.number_input(label, min_value, max_value,st.session_state[key], key=key)
     st.session_state[backup_key] = value
     return value
 
@@ -402,6 +395,7 @@ elif page == "Lifestyle Assessment":
     with col1:
         age = persist_number("🎂 Age", "age_widget", "age", 25, 80, 40)
 
+        #index tells selectbox which option to display. gender stores the actual option selected.
         gender_opts = ["Male", "Female"]
         gender = st.selectbox("🚻 Gender", gender_opts,
                                index=gender_opts.index(st.session_state.get("gender", "Male")))
@@ -530,7 +524,7 @@ elif page == "Clinical Prediction":
         sex = 1 if gender == "Male" else 0
         cp_val = {"Typical Angina": 0, "Atypical Angina": 1, "Non-anginal Pain": 2, "Asymptomatic": 3}[cp]
         fbs_val = 1 if fbs=="Yes" else 0
-        restecg_val = {"Normal": 0, "ST-T Wave Abnormality": 1, "Left Ventricular Hypertrophy": 2}[restecg]
+        restecg_val = {"Normal": 0, "ST-T Wave Abnormality": 1, "Left Ventricular Hypertrophy": 2}[restecg] #"use the value stored in the variable restecg as the key to look up in this dictionary."
         exang_val = 1 if exang=="Yes" else 0
         slope_val = {"Upsloping": 0, "Flat": 1, "Downsloping": 2}[slope]
         thal_val = {"Normal": 1, "Fixed Defect": 2, "Reversible Defect": 3}[thal]
@@ -567,11 +561,23 @@ elif page == "Clinical Prediction":
         if cp_val in [0, 1]:
             recs.append("⚠️ Avoid ignoring recurring chest discomfort, especially when it occurs during physical activity.")
 
+
+        if st.session_state.get("smoke") == "Yes":
+            recs.append("🚭 Quitting is one of the single most effective steps you can take to reduce cardiovascular risk.")
+        if st.session_state.get("alcohol") == "Yes":
+            recs.append("🍺 Consider limiting alcohol intake, as excessive consumption can contribute to high blood pressure and heart strain over time.")
+        if st.session_state.get("exercise") == "No":
+            recs.append("🏃 You indicated limited regular exercise — even light daily activity like walking can meaningfully improve cardiovascular health over time.")
+        if st.session_state.get("diabetes") == "Yes":
+            recs.append("🩺 Given your reported diabetes, consistent blood sugar monitoring alongside cardiovascular check-ups is especially important.")
+        if st.session_state.get("bp_history") == "Yes":
+            recs.append("🩸 Since you have a history of high blood pressure, regular home monitoring and medication adherence (if prescribed) are important.")
+        if st.session_state.get("family_history") == "Yes":
+            recs.append("👨‍👩‍👧 With a family history of heart disease, earlier and more frequent cardiac screening is generally advisable, even without symptoms.")
+
         recs += [
             "🥦 Prefer a heart-healthy diet rich in vegetables, fruits, whole grains and unsaturated fats.",
-            "🚶 Build regular moderate physical activity into your routine and increase intensity gradually.",
             "😴 Maintain a consistent sleep schedule and aim for adequate, good-quality sleep.",
-            "🚭 Avoid smoking and tobacco, as eliminating smoking is one of the most important modifiable risk factors.",
             "💧 Maintain adequate hydration throughout the day, especially during hot weather and physical activity.",
         ]
 
