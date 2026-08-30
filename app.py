@@ -546,8 +546,13 @@ elif page == "Clinical Prediction":
             recs.append("📅 Consider regular cardiovascular health check-ups to monitor heart health and identify potential concerns early.")
         if trestbps > 130:
             recs.append("🩸 Maintain healthy BP through a balanced diet, regular physical activity, stress management and routine monitoring.")
+        elif trestbps < 90:
+            recs.append("🩸 Your blood pressure reading is on the lower side — if you experience dizziness or fatigue, consult a doctor.")
+
         if chol > 200:
             recs.append("🥗 Choose more fibre-rich foods such as fruits, vegetables, whole grains while limiting foods rich in saturated and trans fats.")
+        elif chol < 125:
+            recs.append("🥗 Your cholesterol reading is unusually low — this is uncommon and worth mentioning to a doctor if you haven't already.")
         if fbs_val == 1:
             recs.append("🍬 Maintain consistent blood-sugar management through balanced meals, regular activity and appropriate medical follow-up.")
         if exang_val == 1:
