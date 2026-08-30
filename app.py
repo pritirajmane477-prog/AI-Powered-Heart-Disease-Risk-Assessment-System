@@ -447,10 +447,6 @@ elif page == "Clinical Prediction":
     stepper(2)
     st.title("🩺 Clinical Report Prediction")
 
-    if "lifestyle_done" not in st.session_state:
-        st.warning("Please complete the Lifestyle Assessment first.")
-        st.stop()
-
     age = st.session_state.get("age", 40)
     gender = st.session_state.get("gender", "Male")
 
@@ -538,7 +534,7 @@ elif page == "Clinical Prediction":
         input_data = scaler.transform(input_data)
 
         probability = model.predict_proba(input_data)
-        risk = probability[0][0]
+        risk = probability[0][1]
 
         if risk < 0.50:
             css_class, label, sub = "result-low", "🟢 Lower Estimated Risk", "Please continue regular health checkups."
