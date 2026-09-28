@@ -534,7 +534,7 @@ elif page == "Clinical Prediction":
         input_data = scaler.transform(input_data)
 
         probability = model.predict_proba(input_data)
-        risk = probability[0][1]
+        risk = probability[0][0]
 
         if risk < 0.50:
             css_class, label, sub = "result-low", "🟢 Lower Estimated Risk", "Please continue regular health checkups."
