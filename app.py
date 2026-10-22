@@ -328,7 +328,7 @@ if page == "Home":
     st.markdown("""
 ### Welcome 👋
 
-This application estimates the **probability** of heart disease using
+This application estimates the **presence** of heart disease using
 Machine Learning.
 
 The assessment is completed in **two simple steps**:
@@ -365,7 +365,7 @@ final prediction is made from clinical parameters.
         st.markdown("""
         <div class="feature-card">
             <div class="feature-icon">📊</div>
-            <div class="feature-title">Risk Probability</div>
+            <div class="feature-title">Risk Estimation</div>
             <div class="feature-text">The model tells you whether heart disease is detected or not detected.</div>
         </div>
         """, unsafe_allow_html=True)
